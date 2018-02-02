@@ -10,22 +10,26 @@ proj = st_crs(npac_poly)$proj4string %>% CRS()
 source("helper_code/make_hex_grid.R")
 source("helper_code/crawl_funcs.R")
 
+### Download data from figshare
+if(!file.exists("raw_data/nfs_pups_2005.csv")){
+  if(!file.exists("raw_data")) dir.create("raw_data")
+  path = "raw_data/nfs_pups_2005.csv"
+  download.file("https://ndownloader.figshare.com/files/10364766", "raw_data/nfs_pups_2005.csv")
+}
+
+
+
 ### Read in pup telemetry data
-pup_frame = read_csv("raw_data/Pups_2005.csv", 
+pup_frame = read_csv("raw_data/nfs_pups_2005.csv", 
                      col_types=cols(
-                       id = col_character(),
                        dbid = col_integer(),
-                       instrumenttype = col_character(),
-                       ptt = col_integer(),
                        site = col_character(),
-                       GMT = col_datetime(format = "%m/%d/%Y %H:%M:%S"),
-                       depcode = col_integer(),
+                       GMT = col_datetime(format = "%m/%d/%y %H:%M"),
                        Habitat = col_character(),
                        DateDeploy = col_date(format = "%m/%d/%y"),
                        loc_class = col_factor(levels = c('3', '2', '1', '0', 'A', 'B','Z')),
                        lat = col_double(),
                        long = col_double(),
-                       long2 = col_double(),
                        sex = col_factor(levels = c('F','M'))
                      )
 ) %>% 
@@ -92,6 +96,7 @@ save(pup_frame, npac_poly, proj, file="data_products/pup_frame.RData")
 if(!dir.exists("plots")) dir.create("plots")
 
 for(i in 1:length(unique(pup_frame$dbid))){
+  message("plotting ", unique(pup_frame$dbid)[i], " ...")
   locs = pup_frame$data[[i]] 
   hexes = pup_frame$hex_grid[[i]]$poly %>% st_as_sf()
   bb = st_bbox(hexes)
@@ -118,16 +123,14 @@ for(i in 1:length(unique(pup_frame$dbid))){
 }
 
 sims = pup_frame %>% mutate(sims=purrr::map(sims,~as(.x,"data.frame"))) %>% 
-  select(dbid, data, sims, hex_grid) %>% select(dbid, sims) %>% unnest() %>% 
+  dplyr::select(dbid, data, sims, hex_grid) %>% dplyr::select(dbid, sims) %>% unnest() %>% 
   mutate(dbid=factor(dbid), group=paste0(dbid, reps)) %>% 
   group_by(dbid) %>% mutate(mins = minute(Time) %>% factor() %>% as.numeric()) %>% ungroup()
 
 p_sims = ggplot() + 
   geom_sf(data=npac_poly, fill='black', color='black') +
   coord_sf(xlim = c(min(sims$mu.x), max(sims$mu.x)), ylim = c(min(sims$mu.y), max(sims$mu.y))) +
-  # scale_x_continuous(breaks = seq(0, 360, by=10)) +
-  # scale_y_continuous(breaks = seq(0, 180, by=5)) +
   geom_path(aes(y=mu.y, x=mu.x, color=dbid, group=group), alpha=0.2, data=sims %>% filter(mins==1)) +
-  xlab("Longitude") + ylab("Latitude")+
-  theme(panel.grid.major = element_line(colour = "white"), legend.position="none")
+  xlab("Longitude") + ylab("Latitude") +
+  theme(panel.grid.major = element_line(colour = "white"), legend.position="none") 
 ggsave("plots/sims_plot.jpg", p_sims, dpi="retina", width=7, height=4, units = "in")

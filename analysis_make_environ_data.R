@@ -1,7 +1,31 @@
  
 ### Load necessary packages
 source("load_packages.R")
-  
+
+### Download data from figshare
+if(!file.exists("raw_data/environmental_data")){
+  dir.create("raw_data/environmental_data")
+  path = "raw_data/environmental_data/"
+  # 2005 wind u
+  download.file("https://ndownloader.figshare.com/files/10364952", paste0(path, "uwnd.10m.gauss.2005.nc"))
+  # 2005 wind v
+  download.file("https://ndownloader.figshare.com/files/10364955", paste0(path, "vwnd.10m.gauss.2005.nc"))
+  # 2006 wind u
+  download.file("https://ndownloader.figshare.com/files/10364964", paste0(path, "uwnd.10m.gauss.2006.nc"))
+  # 2005 wind v
+  download.file("https://ndownloader.figshare.com/files/10364967", paste0(path, "vwnd.10m.gauss.2006.nc"))
+  #Geo current 1
+  download.file("https://ndownloader.figshare.com/files/10365015", paste0(path, "geo_current1.nc"))
+  #Geo current 2
+  download.file("https://ndownloader.figshare.com/files/10365018", paste0(path, "geo_current2.nc"))
+  #Geo current 3
+  download.file("https://ndownloader.figshare.com/files/10365021", paste0(path, "geo_current3.nc"))
+  #SST 1
+  download.file("https://ndownloader.figshare.com/files/10365024", paste0(path, "sst1.nc"))
+  #SST 2
+  download.file("https://ndownloader.figshare.com/files/10365027", paste0(path, "sst2.nc"))
+}
+
 ### Read netcdf data for wind and sst into a list of raster bricks there is one for each year,
 ### So, they need to be stiched together temporally
 cov_list = list(
