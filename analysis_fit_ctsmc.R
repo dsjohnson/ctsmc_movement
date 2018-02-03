@@ -19,7 +19,7 @@ source("load_packages.R")
 ### Source 'helper' code
 source("helper_code/hexify.R")
 source("helper_code/vector2scalar.R")
-source("make_disc_path.R")
+source("helper_code/make_disc_path.R")
 source("helper_code/make_glm_data.R")
 source("helper_code/pmp.R")
 
