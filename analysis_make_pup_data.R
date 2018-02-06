@@ -132,5 +132,6 @@ p_sims = ggplot() +
   coord_sf(xlim = c(min(sims$mu.x), max(sims$mu.x)), ylim = c(min(sims$mu.y), max(sims$mu.y))) +
   geom_path(aes(y=mu.y, x=mu.x, color=dbid, group=group), alpha=0.2, data=sims %>% filter(mins==1)) +
   xlab("Longitude") + ylab("Latitude") +
-  theme(panel.grid.major = element_line(colour = "white"), legend.position="none") 
+  theme(panel.grid.major = element_line(colour = "white"), legend.position="none") +
+  continuous__x_scale()
 ggsave("plots/sims_plot.jpg", p_sims, dpi="retina", width=7, height=4, units = "in")

@@ -9,6 +9,7 @@ library(raster)
 library(ncdf4)
 library(ncdf4.helpers)
 library(mgcv)
+library(viridis)
 
 ### Necessary package for fir seal analysis, can be omitted for others
 ### comment the line out if not needed, else

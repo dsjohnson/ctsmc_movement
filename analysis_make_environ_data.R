@@ -1,4 +1,4 @@
- 
+
 ### Load necessary packages
 source("load_packages.R")
 
@@ -111,4 +111,105 @@ quad_list$geo_curr_u <- quad_list$geo_curr_v <- curr_grid[idx]
 
 if(!dir.exists("data_products")) dir.create("data_products")
 save(cov_list, quad_list, file = "data_products/environ_cov_data.rda")
+
+### Make some movies
+# The code below can make some animations of the 3 different spatio-temporal environmental data sets
+
+# library(rasterVis)
+# library(animation)
+# load("data_products/pup_frame.RData")
+# source("helper_code/make_hex_grid.R")
+# sims = pup_frame %>% mutate(sims=purrr::map(sims,~as(.x,"data.frame"))) %>% 
+#   dplyr::select(dbid, data, sims, hex_grid) %>% dplyr::select(dbid, sims) %>% unnest() %>% 
+#   mutate(dbid=factor(dbid), group=paste0(dbid, reps)) %>% 
+#   group_by(dbid) %>% mutate(mins = minute(Time) %>% factor() %>% as.numeric()) %>% ungroup() %>% 
+#   filter(mins==4)
+# coordinates(sims) = ~mu.x+mu.y
+# proj4string(sims) = st_crs(npac_poly)[[2]]
+# sims = spTransform(sims, paste0(proj4string(cov_list$sst), " +lon_wrap=180"))
+# 
+# 
+# cov_list_sub = cov_list %>% map(crop, y=extent(sims))
+# npac_sp = as(npac(resolution="i"), "Spatial") %>% spTransform(proj4string(sims)) %>% 
+#   ms_clip(target=., bbox=sims@bbox %>% as.vector())
+# 
+# 
+# ani.options(
+#   interval = 0.12, 
+#   ani.dev=function(...){png(res=72*4,...)},
+#   ani.width=480*4,
+#   ani.height=480*4
+# )
+# 
+# ### SST
+# myColorkey = list(
+#   at=seq(-2,25,length=100),
+#   labels=list(at=seq(-2,25,length=10))
+# )
+# saveVideo({
+#   for(t in 1:dim(cov_list_sub$sst)[3]){
+#   # for(t in 1:30){
+#     tmp=levelplot(
+#       cov_list_sub$sst[[t]], xlab="Longitude", ylab="Latitude", par.settings = viridisTheme, 
+#       main=paste0("SST: ", as.character(quad_list$sst[t])), 
+#       at=seq(-2,25,length=100),
+#       colorkey=myColorkey,
+#       margin=F) + layer(sp.polygons(npac_sp, fill='gray70'))
+#     print(tmp)
+#     cat(t, "  ")
+#   }
+# }, video.name = "sst_video.mp4")
+# 
+# 
+# ### Surface wind
+# myColorkey = list(
+#   at=seq(0,32,length=100),
+#   labels=list(at=round(seq(0,32,3)))
+# )
+# saveVideo({
+# for(t in 1:dim(cov_list_sub$surface_wind_u)[3]){
+#   # for(t in 1:33){
+#   w = brick(cov_list_sub$surface_wind_u[[t]], cov_list_sub$surface_wind_v[[t]])
+#   tmp=vectorplot(
+#     w, isField ="dXY", xlab="Longitude", ylab="Latitude", #par.settings = viridisTheme,
+#     main=paste0("Surface wind: ", date(quad_list$surface_wind_u[t])), 
+#     par.settings = viridisTheme, 
+#     at=seq(0,32,length=100),
+#     colorkey=myColorkey,
+#     lwd.arrows=0.5,
+#     col.arrows='white',
+#     margin=F) + layer(sp.polygons(npac_sp, fill='gray70', col='gray70'))
+#   print(tmp)
+#   cat(t, "  ")
+# }
+# }, video.name="winds_video.mp4")
+# 
+# 
+# ### Ocean currents
+# curr_vel = as.vector(sqrt(values(cov_list_sub$geo_curr_u)^2 + values(cov_list_sub$geo_curr_v)^2)) %>% 
+#   .[!is.na(.)]
+# 
+# myColorkey = list(
+#   at=seq(0,1.05, length=100),
+#   labels=list(at=seq(0,0.7, 0.1))
+# )
+# saveVideo({
+#   for(t in 1:dim(cov_list_sub$geo_curr_u)[3]){
+#     w = brick(cov_list_sub$geo_curr_u[[t]], cov_list_sub$geo_curr_v[[t]])
+#     tmp=vectorplot(
+#       w, isField ="dXY", xlab="Longitude", ylab="Latitude", #par.settings = viridisTheme,
+#       main=paste0("Geostrophic current: ", date(quad_list$geo_curr_u[t])), 
+#       par.settings = viridisTheme, 
+#       at=seq(0,1.05, length=100),
+#       # colorkey=myColorkey,
+#       lwd.arrows=0.5,
+#       col.arrows='white',
+#       margin=F) + layer(sp.polygons(npac_sp, fill='gray70', col='gray70'))
+#     print(tmp)
+#     cat(t, "  ")
+#   }
+# }, video.name="curr_video.mp4")
+
+
+
 
