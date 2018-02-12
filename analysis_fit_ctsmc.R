@@ -1,17 +1,3 @@
-# library(sp)
-# library(sf)
-# library(spdep)
-# library(crawl)
-# library(lubridate)
-# library(raster)
-# library(ncdf4)
-# library(ncdf4.helpers)
-# library(zoo)
-# library(mgcv)
-# library(tidyverse)
-# library(nPacMaps) # install with devtools::install_github('jmlondon/npacmaps')
-# library(stringr)
-# library(Matrix)
 
 ### Load necessary packages
 source("load_packages.R")

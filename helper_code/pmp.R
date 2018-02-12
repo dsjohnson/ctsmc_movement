@@ -29,3 +29,14 @@ ln_prior_gam = function(object){
     return(as.numeric(-(t(b_sm) %*% S %*%  b_sm)/2 + ln_det_S/2 - M*log(2*pi)/2))
   }
 }
+
+unc_ci = function(eff_mat, se_mat, prob=0.95, sim=50000){
+  m = colMeans(eff_mat)
+  sd = sqrt(colMeans(se_mat^2) + apply(eff_mat, 2, var))
+  out_df = data.frame(est=m, se=sd, lowCI=NA, upCI=NA)
+  for(p in 1:ncol(eff_mat)){
+    out_df[p,3:4] = mapply(function(eff, se){rnorm(sim, eff, se)}, eff=eff_mat[,p], se=se_mat[,p]) %>% 
+      as.vector() %>% mcmc() %>% HPDinterval(prob=prob)
+  }
+  return(out_df)
+}

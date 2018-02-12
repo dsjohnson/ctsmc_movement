@@ -9,8 +9,8 @@ make_glm_data = function(disc_path, neighbor_df, hex_cov_df){
     glm_data$z[nrow(glm_data)] = 1
     glm_data$move[(nrow(glm_data)-6+1):nrow(glm_data)] = max(glm_data$move, na.rm=T)+1
   }
-  prev_move_data = glm_data %>% filter(z==1) %>% select(move, bearing_to_next) %>% 
-    mutate(prev_bearing = c(NA, bearing_to_next[-n()])) %>% select(-bearing_to_next)
+  prev_move_data = glm_data %>% filter(z==1) %>% dplyr::select(move, bearing_to_next) %>% 
+    mutate(prev_bearing = c(NA, bearing_to_next[-n()])) %>% dplyr::select(-bearing_to_next)
   
   glm_data %>% left_join(prev_move_data, by=c("move")) %>% 
     mutate(

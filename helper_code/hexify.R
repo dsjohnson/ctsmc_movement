@@ -48,6 +48,6 @@ hexify_df = function(raster_list, hex_list, quad_list, bound){
   if(length(cov_list)>1) for(j in 2:length(hex_cov)) hex_cov_df %>% full_join(hex_cov[[j]], by=c("hex", "Time")) -> hex_cov_df
   names(hex_cov_df)[-c(1:2)] = names(cov_list)
   hex_cov_df %>% arrange(hex, Time) -> hex_cov_df
-  hex_cov_df = lapply(hex_cov_df, na.locf, na.rm=FALSE) %>% as.data.frame() -> hex_cov_df
+  hex_cov_df = lapply(hex_cov_df, zoo::na.locf, na.rm=FALSE) %>% as.data.frame() -> hex_cov_df
   return(hex_cov_df)
 }

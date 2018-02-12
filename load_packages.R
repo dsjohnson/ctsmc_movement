@@ -10,6 +10,8 @@ library(ncdf4)
 library(ncdf4.helpers)
 library(mgcv)
 library(viridis)
+library(coda)
+library(zoo)
 
 ### Necessary package for fir seal analysis, can be omitted for others
 ### comment the line out if not needed, else

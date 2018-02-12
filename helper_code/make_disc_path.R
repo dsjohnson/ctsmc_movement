@@ -1,12 +1,12 @@
 make_disc_path = function(sims, rep, hex_poly, quad_times){
   bound = list(min(sims$Time) , max(sims$Time))
-  cont_path_time = slot(sims,"data") %>% filter(reps==1) %>% select(Time)
+  cont_path_time = slot(sims,"data") %>% filter(reps==1) %>% dplyr::select(Time)
   disc_path = data.frame(
     cont_path_time, 
     move_hex_to=over(sims[sims@data$reps==k,], hex_poly)
   ) %>% 
     mutate(move_hex_from = c(NA,move_hex_to[-n()])) %>% 
-    full_join(data.frame(Time=quad_times, cov_trans=1), by="Time") %>% arrange(Time) %>% 
+    full_join(data.frame(Time=quad_times, cov_trans=1), by="Time") %>% dplyr::arrange(Time) %>% 
     mutate(grid_time = ifelse(cov_trans==1, Time, NA) %>% zoo::na.locf() %>% crawl::intToPOSIX()) %>%
     filter(Time>=bound[[1]]) %>% 
     mutate(
@@ -19,7 +19,7 @@ make_disc_path = function(sims, rep, hex_poly, quad_times){
     mutate(
       tempC = c(NA, diff(elapsed_time)) %>% ifelse(is.na(.), tempB, .),
       tsm = cumsum(tempB) %>% ifelse(.==0, NA, .)
-    ) %>% ungroup() %>% select(-contains("temp"))
+    ) %>% ungroup() %>% dplyr::select(-contains("temp"))
   disc_path %>% 
     mutate(
       move_hex_to = zoo::na.locf(move_hex_to), 
