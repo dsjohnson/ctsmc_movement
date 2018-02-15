@@ -12,6 +12,9 @@ library(mgcv)
 library(viridis)
 library(coda)
 library(zoo)
+library(future)
+library(foreach)
+library(doFuture)
 
 ### Necessary package for fir seal analysis, can be omitted for others
 ### comment the line out if not needed, else

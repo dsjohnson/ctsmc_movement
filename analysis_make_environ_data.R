@@ -110,7 +110,8 @@ quad_list$sst_u <- quad_list$sst_v <- quad_list$sst
 quad_list$geo_curr_u <- quad_list$geo_curr_v <- curr_grid[idx]
 
 if(!dir.exists("data_products")) dir.create("data_products")
-save(cov_list, quad_list, file = "data_products/environ_cov_data.rda")
+saveRDS(cov_list, file = "data_products/cov_list.rds")
+saveRDS(quad_list, file = "data_products/quad_list.rds")
 
 ### Make some movies
 # The code below can make some animations of the 3 different spatio-temporal environmental data sets

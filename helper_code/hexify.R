@@ -36,17 +36,17 @@ hexify = function(x, hex_list, grid,idx){
 
 hexify_df = function(raster_list, hex_list, quad_list, bound){
   hex_cov = vector(mode="list", length(raster_list))
-  for(j in 1:length(cov_list)){
+  for(j in 1:length(raster_list)){
     if(length(quad_list)==1) grid=quad_list[[1]]
     else grid=quad_list[[j]]
     idx = seq(min(which(grid>=bound[[1]]))-1, max(which(grid<=bound[[2]]))+1, 1)
-    hex_cov[[j]] =  hexify(cov_list[[j]], hex_list, grid, idx)
+    hex_cov[[j]] =  hexify(raster_list[[j]], hex_list, grid, idx)
     
-    message(names(cov_list)[j], " hexified ...")
+    message(names(raster_list)[j], " hexified ...")
   }
   hex_cov_df = hex_cov[[1]] 
-  if(length(cov_list)>1) for(j in 2:length(hex_cov)) hex_cov_df %>% full_join(hex_cov[[j]], by=c("hex", "Time")) -> hex_cov_df
-  names(hex_cov_df)[-c(1:2)] = names(cov_list)
+  if(length(raster_list)>1) for(j in 2:length(hex_cov)) hex_cov_df %>% full_join(hex_cov[[j]], by=c("hex", "Time")) -> hex_cov_df
+  names(hex_cov_df)[-c(1:2)] = names(raster_list)
   hex_cov_df %>% arrange(hex, Time) -> hex_cov_df
   hex_cov_df = lapply(hex_cov_df, zoo::na.locf, na.rm=FALSE) %>% as.data.frame() -> hex_cov_df
   return(hex_cov_df)

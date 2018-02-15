@@ -2,6 +2,9 @@
 ### Load necessary packages
 source("load_packages.R")
 
+### Set up parallel evaluation
+plan(multiprocess)
+
 ### Load North Pacific map and projection
 npac_poly = npac()
 proj = st_crs(npac_poly)$proj4string %>% CRS()
@@ -61,6 +64,7 @@ pup_frame %>% group_by(dbid, site, sex) %>% nest() %>%
 set.seed(123)
 
 ### Fit crawl model
+system.time({
 pup_frame %>% 
   mutate(crw_fit = map(data, crawl_fit, 
                        err.model=list(x=~loc_class-1), 
@@ -70,21 +74,26 @@ pup_frame %>%
                        theta=c(log(2000), log(2000), 5, 0, 0),
                        constr=list(
                          lower=c(rep(log(1500),2), rep(-Inf,3)), upper=rep(Inf,5)
-                       ),
+                       ), 
                        method='L-BFGS-B'
-  )) -> pup_frame
+                       )
+                       
+  ) -> pup_frame
+})
 
 
 ### Create path posterior simulations...
 pup_frame %>% mutate(
-  simulator = map(crw_fit, crwSimulator, predTime="15 mins", parIS=0),
-  sims = map(simulator, sim_tracks, reps=20, CRSobj=proj)
+  simulator = map(crw_fit, ~future(crwSimulator(.x, predTime="15 mins", parIS=0))) %>% future::values(),
+  sims = map(simulator, ~future(sim_tracks(.x,reps=20, CRSobj=proj))) %>% future::values()
 ) -> pup_frame
 
 
 ### Form hex grid around simulated paths
 pup_frame %>% 
-  mutate(hex_grid = map(sims, hex_grid_spsample, cellsize=40000, buffer=150000) ) -> pup_frame
+  mutate(
+    hex_grid = map(sims, ~future(hex_grid_spsample(.x, cellsize=40000, buffer=150000))) %>% values
+  ) -> pup_frame
 
 if(!dir.exists("data_products")) dir.create("data_products")
 save(pup_frame, npac_poly, proj, file="data_products/pup_frame.RData")
@@ -106,9 +115,7 @@ for(i in 1:length(unique(pup_frame$dbid))){
     geom_sf(data=hexes, fill=NA) +
     coord_sf(xlim = c(bb["xmin"]-100000, bb["xmax"]+100000), ylim = c(bb["ymin"]-100000, bb["ymax"]+100000)) +
     xlab("Longitude") + ylab("Latitude") +
-    theme(panel.grid.major = element_line(colour = "white"), legend.position="none") +
-    scale_x_continuous(breaks = seq(-180,180,5)) +
-    scale_y_continuous(breaks = seq(0,90,5))
+    theme(panel.grid.major = element_line(colour = "white"), legend.position="none") 
   
   sims=pup_frame$sims[[i]] %>% as(.,"data.frame")
   for(r in 1:max(sims$reps)){
@@ -118,8 +125,7 @@ for(i in 1:length(unique(pup_frame$dbid))){
   p_data = p_data + geom_point(data=locs, aes(x=x, y=y), cex=0.5, col='blue')
   nm = paste0("plots/p_",unique(pup_frame$dbid)[i],"_data.jpg")
   ggsave(nm, p_data, dpi="retina", width=7, height=7, units = 'in')
-  
-  rm('locs', 'hexes', 'bb', 'p_data', 'sims')
+
 }
 
 sims = pup_frame %>% mutate(sims=purrr::map(sims,~as(.x,"data.frame"))) %>% 
