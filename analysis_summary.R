@@ -1,16 +1,14 @@
 
 source("load_packages.R")
-load("data_products/pup_frame.RData")
 source("helper_code/pmp.R")
 
-### Look at the PMP
-pmp = readRDS("results/pmp.rds")
-nms = c("rep",paste0("M",1:8))
-pmp = pmp %>%  tibble(dbid = names(.), pmp=.) %>% 
-  mutate(
-    pmp=map(pmp,~cbind(1:20,.x)) %>% map(function(x){colnames(x)=nms; return(x)}) %>% 
-      map(as_tibble)
-  ) %>% unnest() %>% gather(key=model, pmp, -dbid, -rep)
+pup_frame = readRDS("results/pup_frame_fitted.rds")
+
+pmp = NULL
+for(i in 1:nrow(pup_frame)){ 
+  pmp = readRDS(pup_frame$fit[[i]]) %>% dplyr::select(-fit) %>% bind_rows(pmp,.)
+}
+pmp= pmp %>% mutate(dbid=factor(dbid), model=factor(model))
 pmp_summ = pmp %>% group_by(dbid, model) %>% summarise(pmp_est=mean(pmp)) %>% ungroup()  
 pos_mods = pmp_summ %>% group_by(model) %>% summarise(pmp=mean(pmp_est)) %>% filter(pmp>0) %>% pull(model)
 pmp_summ = pmp_summ %>% filter(model%in%pos_mods)
@@ -30,23 +28,23 @@ ggsave("plots/pmp_fig.jpg", dpi="retina", width=7, height=7, units = "in")
 
 
 ### Summarize model 6 effects
+get_plot_data = function(object){
+  pdf(NULL)
+  res <- plot(object, pages=1, scale=0)
+  invisible(dev.off())
+  res
+}
+
 
 fit_list = list.files("results") %>% .[grepl("fit_frame",.)]
-# fit_list = fit_list[1:5]
-wind_eff <- north_eff <- east_eff <- curr_eff <- matrix(NA, nrow(fit_frame), 100)
-wind_se <- north_se <- east_se <- curr_se <- matrix(NA, nrow(fit_frame), 100)
 
-north_ci <- east_ci <- wind_ci <- curr_ci <- NULL
 for(i in 1:length(fit_list)){
-  fit_frame = readRDS(paste0("results/",fit_list[[i]])) %>% filter(model==6)
-  for(k in 1:nrow(fit_frame)){
-    plot_data <- {
-      pdf(NULL)
-      res <- plot(fit_frame$fit[[k]], pages=1, scale=0)
-      invisible(dev.off())
-      res
-    }
-    north_eff[k,]= plot_data[[1]]$fit
+  fit_frame = readRDS(paste0("results/",fit_list[[i]])) %>% filter(model==8)
+  fit_frame %>% mutate(
+    plot_data = purrr::map(fit, get_plot_data)
+  ) -> fit_frame
+  
+      north_eff[k,]= plot_data[[1]]$fit
     north_se[k,]= plot_data[[1]]$se
     east_eff[k,]= plot_data[[2]]$fit
     east_se[k,]= plot_data[[2]]$se
@@ -54,6 +52,9 @@ for(i in 1:length(fit_list)){
     wind_se[k,] = plot_data[[3]]$se
     curr_eff[k,] = plot_data[[4]]$fit
     curr_se[k,] = plot_data[[4]]$se
+    sst_eff[k,] = plot_data[[5]]$fit
+    sst_se[k,] = plot_data[[5]]$se
+    
     
   }
   unc_ci(north_eff, north_se, sim=10000) %>% cbind(dbid=fit_frame$dbid[[1]],time=plot_data[[1]]$x,.) %>% rbind(north_ci,.) -> north_ci

@@ -115,7 +115,7 @@ saveRDS(quad_list, file = "data_products/quad_list.rds")
 
 ### Make some movies
 # The code below can make some animations of the 3 different spatio-temporal environmental data sets
-
+# if(!dir.exists("plots")) dir.create("plots")
 # library(rasterVis)
 # library(animation)
 # load("data_products/pup_frame.RData")
@@ -159,7 +159,7 @@ saveRDS(quad_list, file = "data_products/quad_list.rds")
 #     print(tmp)
 #     cat(t, "  ")
 #   }
-# }, video.name = "sst_video.mp4")
+# }, video.name = "plots/sst_video.mp4")
 # 
 # 
 # ### Surface wind
@@ -183,7 +183,7 @@ saveRDS(quad_list, file = "data_products/quad_list.rds")
 #   print(tmp)
 #   cat(t, "  ")
 # }
-# }, video.name="winds_video.mp4")
+# }, video.name="plots/winds_video.mp4")
 # 
 # 
 # ### Ocean currents
@@ -209,7 +209,7 @@ saveRDS(quad_list, file = "data_products/quad_list.rds")
 #     print(tmp)
 #     cat(t, "  ")
 #   }
-# }, video.name="curr_video.mp4")
+# }, video.name="plots/curr_video.mp4")
 
 
 

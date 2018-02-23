@@ -7,7 +7,7 @@ imputation_pmp_gam = function(model_list){
           determinant(vcov(model_list[[i]]), logarithm = T)$modulus -
           length(coef(model_list[[i]]))*log(2*pi) -
           2*ln_prior_gam(model_list[[i]])
-        )
+      )
   }
   out = exp(-0.5*(out-min(out)))
   out = round(out/sum(out),2)
@@ -15,19 +15,17 @@ imputation_pmp_gam = function(model_list){
 }
 
 ln_prior_gam = function(object){
-  # return(0)
-  lambda = object$sp * unlist(lapply(object$smooth, "[[", "S.scale"))
-  if(length(lambda)==0){
-    return(0)
-  } else{
-    S = lapply(lapply(object$smooth, "[[", "S"), "[[", 1) %>% 
-      mapply('*', lambda, ., SIMPLIFY = F) %>% .bdiag(.)
-    E = eigen(S, only.values = T)$values
-    M = sum(E!=0)
-    ln_det_S = sum(log(E[E!=0]))
-    b_sm = tail(coef(object), nrow(S))
-    return(as.numeric(-(t(b_sm) %*% S %*%  b_sm)/2 + ln_det_S/2 - M*log(2*pi)/2))
-  }
+  lambda = (object$sp * unlist(lapply(object$smooth, "[[", "S.scale"))) 
+  if(length(lambda)==0) return(0)
+  S = lapply(object$smooth, "[[", "S")
+  if(length(lambda)!=2*length(S)) stop("In gam fitting: must have 'select=TRUE' for evaluating PMP!")
+  lambda = lambda  %>% split(ceiling(seq_along(.)/2))
+  S = S %>% map2(lambda, ~.x[[1]]*.y[[1]] + .x[[2]]*.y[[2]]) %>% .bdiag(.)
+  E = eigen(S, only.values = T)$values
+  M = sum(E!=0)
+  ln_det_S = sum(log(E[E!=0]))
+  b_sm = tail(coef(object), nrow(S))
+  return(as.numeric(-(t(b_sm) %*% S %*%  b_sm)/2 + ln_det_S/2 - M*log(2*pi)/2))
 }
 
 unc_ci = function(eff_mat, se_mat, prob=0.95, sim=50000){
