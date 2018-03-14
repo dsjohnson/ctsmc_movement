@@ -46,7 +46,7 @@ get_plot_data = function(object){
 fit_list = pull(pup_frame, fit)
 dbid = pull(pup_frame, dbid)
 
-foreach(i = 1:length(fit_list)) %dopar% {
+foreach(i = 1:length(fit_list)) %do% {
   fit_frame = readRDS(fit_list[[i]]) %>% filter(model==8)
   fit_frame %>% mutate(
     plot_data = purrr::map(fit, get_plot_data),
@@ -85,7 +85,7 @@ foreach(i = 1:length(fit_list)) %dopar% {
   eff_ci = bind_rows(north_ci, east_ci, wind_ci, curr_ci, sst_ci) %>% 
     mutate(dbid = dbid[[i]])
   
-  plt=ggplot(data=eff_ci) + 
+  ggplot(data=eff_ci) + 
     geom_path(aes(x=time, y=est), lwd=2) +
     geom_ribbon(aes(ymin=lowCI, ymax=upCI, x=time), alpha=0.2) + 
     geom_abline(slope=0, intercept = 0, color="gray70", lwd=2) + 
