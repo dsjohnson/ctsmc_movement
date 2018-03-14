@@ -1,15 +1,17 @@
-imputation_pmp_gam = function(model_list){
+imputation_pmp_gam = function(model_list, sp.scale=10){
   out = rep(NA, length(model_list))
   for(i in 1:length(model_list)){
+    lambda = (model_list[[i]]$sp * unlist(lapply(model_list[[i]]$smooth, "[[", "S.scale"))) 
     out[i] = 
       as.numeric(
-        -2*logLik(model_list[[i]]) -
-          determinant(vcov(model_list[[i]]), logarithm = T)$modulus -
-          length(coef(model_list[[i]]))*log(2*pi) -
-          2*ln_prior_gam(model_list[[i]])
+        logLik(model_list[[i]]) + ln_prior_gam(model_list[[i]]) +
+          0.5*determinant(vcov(model_list[[i]]), unconditional=T, logarithm = T)$modulus +
+          0.5*determinant(sp.vcov(model_list[[i]]), logarithm = T)$modulus +
+          0.5*(length(coef(model_list[[i]])) + length(lambda))*log(2*pi) + 
+          sum(dnorm(1/sqrt(lambda), 0, sp.scale, log=T) - (3/2)*log(lambda) -log(2))
       )
   }
-  out = exp(-0.5*(out-min(out)))
+  out = exp(out-max(out))
   out = round(out/sum(out),2)
   return(out)
 }
