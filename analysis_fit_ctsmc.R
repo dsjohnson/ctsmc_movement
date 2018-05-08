@@ -4,7 +4,7 @@ source("load_packages.R")
 
 ### Setup parallel processing
 registerDoFuture()
-plan(multisession)
+plan(multisession, workers=6)
 
 ### Source 'helper' code
 source("helper_code/fit_ctsmc.R")
