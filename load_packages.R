@@ -16,6 +16,7 @@ library(zoo)
 library(future)
 library(foreach)
 library(doFuture)
+library(mvtnorm)
 
 ### Necessary package for fir seal analysis, can be omitted for others
 ### comment the line out if not needed, else

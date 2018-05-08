@@ -6,8 +6,6 @@ source("load_packages.R")
 registerDoFuture()
 plan(multisession)
 
-options(future.progress=TRUE)
-
 ### Source 'helper' code
 source("helper_code/fit_ctsmc.R")
 source("helper_code/hexify.R")
@@ -22,19 +20,6 @@ load("data_products/pup_frame.RData")
 ### create output directories and lists
 if(!dir.exists("results")) dir.create("results")
 
-### Model set
-base = "z ~offset(log(delta)) + log(tsm)*prev_move + s(elapsed_time,by=north,k=4) + s(elapsed_time,by=east,k=4)"
-model_forms = c(
-  base,
-  paste0(base, " + s(elapsed_time,by=wind, k=4)"),
-  paste0(base, " + s(elapsed_time,by=sst, k=4)"),
-  paste0(base, " + s(elapsed_time,by=geo_curr, k=4)"),
-  paste0(base, " + s(elapsed_time,by=wind, k=4) + s(elapsed_time,by=sst, k=4)"),
-  paste0(base, " + s(elapsed_time,by=wind, k=4) + s(elapsed_time,by=geo_curr, k=4)"),
-  paste0(base, " + s(elapsed_time,by=sst, k=4) + s(elapsed_time,by=geo_curr, k=4)"),
-  paste0(base, " + s(elapsed_time,by=wind, k=4) + s(elapsed_time,by=geo_curr, k=4) + s(elapsed_time,by=sst, k=4)")
-)
-
 
 ### Convert environmental data to hex grids and save the file names to the pup data
 pup_frame %>% mutate(
@@ -44,7 +29,8 @@ pup_frame %>% mutate(
 
 ### Fit models
 pup_frame %>% mutate(
-  fit = pmap(.,~fit_ctsmc(...,model_forms = model_forms))
+  fit = pmap(.,~fit_ctsmc(...))
 ) -> pup_frame
+pup_frame %>% unnest(fit) -> pup_frame
 
 saveRDS(pup_frame, "results/pup_frame_fitted.rds")
