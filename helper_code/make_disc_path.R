@@ -3,7 +3,7 @@ make_disc_path = function(sims, rep, hex_poly, quad_times){
   cont_path_time = slot(sims,"data") %>% filter(reps==1) %>% dplyr::select(Time)
   disc_path = data.frame(
     cont_path_time, 
-    move_hex_to=over(sims[sims@data$reps==rep,], hex_poly)
+    move_hex_to=sp::over(sims[sims@data$reps==rep,], hex_poly)
   ) %>% 
     mutate(move_hex_from = c(NA,move_hex_to[-n()])) %>% 
     full_join(data.frame(Time=quad_times, cov_trans=1), by="Time") %>% dplyr::arrange(Time) %>% 
