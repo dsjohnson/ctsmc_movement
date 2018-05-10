@@ -1,6 +1,7 @@
 
 source("load_packages.R")
 source("helper_code/pmp.R")
+source("helper_code/fit_ctsmc.R")
 
 pup_frame = readRDS("results/pup_frame_fitted.rds") 
 
