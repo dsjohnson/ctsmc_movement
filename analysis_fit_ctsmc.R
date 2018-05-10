@@ -34,3 +34,5 @@ pup_frame %>% mutate(
 pup_frame %>% unnest(fit) -> pup_frame
 
 saveRDS(pup_frame, "results/pup_frame_fitted.rds")
+
+plan('sequential')
