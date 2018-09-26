@@ -49,7 +49,7 @@ cov_list = list(
 geo1_u = brick("raw_data/environmental_data/geo_current1.nc", varname="u")
 geo1_v = brick("raw_data/environmental_data/geo_current1.nc", varname="v")
 conn = nc_open("raw_data/environmental_data/geo_current1.nc")
-curr_grid = ncdf4.helpers::nc.get.time.series(conn) %>% crawl::intToPOSIX()
+curr_grid = ncdf4.helpers::nc.get.time.series(conn) %>% as.numeric() %>% crawl::intToPOSIX()
 nc_close(conn)
 idx = which(curr_grid >= ymd("2005-09-01") & curr_grid <= ymd("2006-09-02"))
 geo1_u = geo1_u[[idx]]
@@ -58,7 +58,7 @@ geo1_v = geo1_v[[idx]]
 geo2_u = brick("raw_data/environmental_data/geo_current2.nc", varname="u")
 geo2_v = brick("raw_data/environmental_data/geo_current2.nc", varname="v")
 conn = nc_open("raw_data/environmental_data/geo_current2.nc")
-curr_grid = ncdf4.helpers::nc.get.time.series(conn) %>% crawl::intToPOSIX()
+curr_grid = ncdf4.helpers::nc.get.time.series(conn) %>% as.integer() %>% crawl::intToPOSIX()
 nc_close(conn)
 idx = which(curr_grid >= ymd("2005-09-01") & curr_grid <= ymd("2006-09-02"))
 geo2_u = geo2_u[[idx]]
@@ -85,25 +85,23 @@ names(quad_list) = names(cov_list)
 
 # surface winds u,v
 conn = nc_open("raw_data/environmental_data/uwnd.10m.gauss.2005.nc")
-quad_list$surface_wind_u = ncdf4.helpers::nc.get.time.series(conn)
+quad_list$surface_wind_u = ncdf4.helpers::nc.get.time.series(conn) %>% as.POSIXct()
 nc_close(conn)
 
 conn = nc_open("raw_data/environmental_data/uwnd.10m.gauss.2006.nc")
-quad_list$surface_wind_u = c(quad_list$surface_wind_u, ncdf4.helpers::nc.get.time.series(conn))
+quad_list$surface_wind_u = c(quad_list$surface_wind_u, ncdf4.helpers::nc.get.time.series(conn)) %>% 
+  as.POSIXct()
 nc_close(conn)
-quad_list$surface_wind_u %>% intToPOSIX() -> quad_list$surface_wind_u
-
 quad_list$surface_wind_v = quad_list$surface_wind_u
 
 # sst, sst_u, sst_v
 conn = nc_open("raw_data/environmental_data/sst1.nc")
-quad_list$sst = ncdf4.helpers::nc.get.time.series(conn)
+quad_list$sst = ncdf4.helpers::nc.get.time.series(conn) %>% as.POSIXct()
 nc_close(conn)
 
 conn = nc_open("raw_data/environmental_data/sst2.nc")
-quad_list$sst = c(quad_list$sst, ncdf4.helpers::nc.get.time.series(conn))
+quad_list$sst = c(quad_list$sst, ncdf4.helpers::nc.get.time.series(conn) %>% as.POSIXct())
 nc_close(conn)
-quad_list$sst %>% intToPOSIX() -> quad_list$sst
 quad_list$sst_u <- quad_list$sst_v <- quad_list$sst
 
 # geo curr
