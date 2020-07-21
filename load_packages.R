@@ -13,17 +13,18 @@ library(Matrix)
 library(viridis)
 library(coda)
 library(zoo)
-library(future)
-library(foreach)
-library(doFuture)
+library(furrr)
 library(mvtnorm)
+library(lubridate)
+library(doFuture)
+library(cowplot)
 
 ### Necessary package for fir seal analysis, can be omitted for others
 ### comment the line out if not needed, else
 ### install with-- 
 
 # devtools::install_github('jmlondon/npacmaps')
-library(nPacMaps) 
+library(ptolemy) 
 
 ### At the time this code development, the development version of ggplot2 was necessary for
 ### the geom_sf() function 
